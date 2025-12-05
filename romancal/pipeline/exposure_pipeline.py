@@ -15,6 +15,7 @@ from romancal.assign_wcs import AssignWcsStep
 from romancal.dark_current import DarkCurrentStep
 from romancal.datamodels.library import ModelLibrary
 from romancal.dq_init import dq_init_step
+from romancal.first_read_anomaly import FirstReadAnomalyStep
 from romancal.flatfield import FlatFieldStep
 from romancal.lib.basic_utils import is_fully_saturated
 from romancal.lib.save_wcs import save_wfiwcs
@@ -57,6 +58,7 @@ class ExposurePipeline(RomanPipeline):
         "dq_init": dq_init_step.DQInitStep,
         "saturation": SaturationStep,
         "refpix": RefPixStep,
+        "first_read_anomaly": FirstReadAnomalyStep,
         "linearity": LinearityStep,
         "dark_current": DarkCurrentStep,
         "rampfit": ramp_fit_step.RampFitStep,
@@ -116,6 +118,8 @@ class ExposurePipeline(RomanPipeline):
                     )
                 else:
                     result = self.refpix.run(result)
+                    if result.meta.instrument.detector == "WFI18":
+                        result = self.first_read_anomaly.run(result)
                     result = self.linearity.run(result)
                     result = self.rampfit.run(result)
                     result = self.dark_current.run(result)
