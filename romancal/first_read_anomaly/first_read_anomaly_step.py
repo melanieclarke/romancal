@@ -25,8 +25,12 @@ class FirstReadAnomalyStep(RomanStep):
     """
 
     class_alias = "first_read_anomaly"
-
     reference_file_types: ClassVar = []
+
+    spec = """
+        mask_rows = boolean(default = False) # Just mask the affected rows
+    """
+
 
     def process(self, input_data):
         if isinstance(input_data, rdm.DataModel):
@@ -40,8 +44,8 @@ class FirstReadAnomalyStep(RomanStep):
             input_model.meta.cal_step.first_read_anomaly = "SKIPPED"
             return input_model
 
-        log.info("Correcting the first read anomaly")
-        output_model = correct_anomaly(input_model)
+        log.info("Correcting the first read anomaly for WFI18")
+        output_model = correct_anomaly(input_model, mask_rows=self.mask_rows)
         output_model.meta.cal_step.first_read_anomaly = "COMPLETE"
 
         if self.save_results:
